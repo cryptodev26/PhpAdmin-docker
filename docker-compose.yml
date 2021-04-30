@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  php:
+    container_name: myphp
+    build: ./docker/php
+    networks:
+      - local
+    ports:
+      - "8080:80"
+    volumes:
+      # - .:/var/www/html
+      - ./docker/php/apache2.conf:/etc/apache2/apache2.conf
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+      - ./docker/php/apache-sites-enabled:/etc/apache2/sites-enabled
+      # - test_vol:/var/www/html
+      - './player/:/var/www/html/public'
+
+  db:
+    container_name: mydb
+    image: mariadb
+    environment:
+        MYSQL_ROOT_PASSWORD : test
+        MYSQL_DATABASE : radio
+    volumes:
+        - ./database:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+        - PMA_ARBITRARY=1
+        - PMA_HOST=db
+    restart: always
+    ports:
+        - 8081:80
+    volumes:
+        - /sessions
+    links:
+        - db  
+
+volumes:
+  data-volume:
+
+# volumes:
+#    test_vol:
+#       driver: local
+#       driver_opts:
+#          type: none
+#          device: /code/player
+#          o: bind
+
+# services:
+#   alpine:
+#     image: myimage
+#     command: ls /data
+#     volumes:
+#        - test_vol:/var/www/html
+
+networks:
+  local:
